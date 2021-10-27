@@ -16,36 +16,38 @@ processDataList = [P1,P2,P3,P4,P5,P6,P7,P8]
 
 # Creating the process data objects
 class proccessObj:
-    def __init__(self, proccessList : np.ndarray):
-        self.processList = proccessList
-        self.CPUBurst = self.processList[0]
+    def __init__(self, processList : np.ndarray):
+        self.processList = processList
+        self.CPUBurst = -1
+        self.CPUBurst = self.processList[0].pop(0)
         self.IOBurst = 0
         self.waitTime = 0
         self.TRTime = 0
 
+    def getProcessList(self):
+        return self.processList
+
 # Creating Queues as objects
 class queueObj:
-    def __init__(self, choice):
+    def __init__(self, choice, processObj):
         self.choice = choice
+        self.processObj = processObj
         self.qTime = 0
         self.readyQueue = []
         self.runQueue = []
         self.IOQueue = []
-        self.createQue()
+        if choice == 0:
+            self.createFCFSQue(self.processObj.getProcessList())
 
-    def createQue(self):
-        queType = choice
+    def createFCFSQue(self,processList : np.ndarray):
         # FCFS Queue Object
-        if(queType == 0):
-           print("test")
+        FCFSProcceses = []
+        for i in range(len(processList)):
+            FCFSProcceses.append(proccessObj(processList[i]))
 
-        def fillReadyQue(self, processDataList):
-            FCFSProcceses = []
-            for i in range(len(processDataList)):
-                FCFSProcceses.append(proccessObj(processDataList[i]))
+        for i in range(len(FCFSProcceses)):
+            print(FCFSProcceses[i].processList[0])
 
-            for i in range(len(FCFSProcceses)):
-                print(FCFSProcceses[i].processList[0])
-
-choice = int(input("Enter 0:FCFC || 1:SJH || 2:RR  "))
-FCFSQue = queueObj(choice)
+FCFSProcQue = proccessObj(processDataList)
+choice = 0#int(input("Enter 0:FCFC || 1:SJH || 2:RR  "))
+FCFSQue = queueObj(choice,FCFSProcQue)
