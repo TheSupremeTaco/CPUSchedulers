@@ -51,3 +51,4 @@ class queueObj:
 FCFSProcQue = proccessObj(processDataList)
 choice = 0#int(input("Enter 0:FCFC || 1:SJH || 2:RR  "))
 FCFSQue = queueObj(choice,FCFSProcQue)
+#
