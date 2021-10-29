@@ -1,6 +1,74 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import math
+import copy
+
+# Creating the process data objects
+class proccessListObj:
+    def __init__(self, processDataList : np.ndarray):
+        self.processList = processDataList.copy()
+        self.CPUBurst = -1
+        if(self.CPUBurst == -1):
+            self.CPUBurst = self.processList.pop(0)
+        self.IOBurst = 0
+        self.waitTime = 0
+        self.TRTime = 0
+
+class queueObj:
+    # Creating Queues as objects
+    def __init__(self, choice, processObjList):
+        self.choice = choice
+        self.processObjList = copy.deepcopy(processObjList)
+        self.qTime = 0
+        self.clock = 0
+        self.CPUUtil = 0
+        self.readyQueue = []
+        self.runQueue = []
+        self.IOQueue = []
+
+        if choice == 0:
+            # FCFS procedure
+            self.populateFCFS()
+            self.schedularFCFS()
+        elif choice == 1:
+            # SJF procedure
+            print()
+        elif choice == 2:
+            # RR procedure
+            print()
+        elif choice == 3:
+            # MLFQ procedure
+            print()
+
+    def populateFCFS(self):
+        # FCFS Queue Object
+        for i in range(len(self.processObjList)):
+            self.readyQueue.append(self.processObjList[i])
+
+    def schedularFCFS(self):
+        print("Current Execution Time: ", self.clock)
+        # Ready Queue Procedures
+        if len(self.runQueue) == 0:
+            self.runQueue.append(self.readyQueue.pop(0))
+        for i in range(len(self.readyQueue)):
+            self.readyQueue[i].waitTime += 1
+
+        # Run State Procedures
+        if len(self.runQueue) == 0:
+            self.CPUUtil += 1
+        self.runQueue[0].CPUBurst -= 1
+        if self.runQueue[0].CPUBurst == 0:
+            self.IOQueue.append(self.runQueue.pop(0))
+
+        # IO Queue Procedures
+        for i in range(len(self.IOQueue)):
+            self.IOQueue[i]
+
+        print("Ready Queue: ", self.readyQueue)
+        print("Run Queue: ", self.runQueue)
+        #
+
+
 
 # Importing process data into arrays
 P1 =[5, 27, 3, 31, 5, 43, 4, 18, 6, 22, 4, 26, 3, 24, 5]
@@ -13,42 +81,15 @@ P7 =[14, 46, 17, 41, 11, 42, 15, 21, 4, 32, 7, 19, 16, 33, 10]
 P8 =[4, 14, 5, 33, 6, 51, 14, 73, 16, 87, 6]
 
 processDataList = [P1,P2,P3,P4,P5,P6,P7,P8]
+procObjList = []
+for i in range(len(processDataList)):
+    procObjList.append(proccessListObj(processDataList[i]))
 
-# Creating the process data objects
-class proccessObj:
-    def __init__(self, processList : np.ndarray):
-        self.processList = processList
-        self.CPUBurst = -1
-        self.CPUBurst = self.processList[0].pop(0)
-        self.IOBurst = 0
-        self.waitTime = 0
-        self.TRTime = 0
-
-    def getProcessList(self):
-        return self.processList
-
-# Creating Queues as objects
-class queueObj:
-    def __init__(self, choice, processObj):
-        self.choice = choice
-        self.processObj = processObj
-        self.qTime = 0
-        self.readyQueue = []
-        self.runQueue = []
-        self.IOQueue = []
-        if choice == 0:
-            self.createFCFSQue(self.processObj.getProcessList())
-
-    def createFCFSQue(self,processList : np.ndarray):
-        # FCFS Queue Object
-        FCFSProcceses = []
-        for i in range(len(processList)):
-            FCFSProcceses.append(proccessObj(processList[i]))
-
-        for i in range(len(FCFSProcceses)):
-            print(FCFSProcceses[i].processList[0])
-
-FCFSProcQue = proccessObj(processDataList)
 choice = 0#int(input("Enter 0:FCFC || 1:SJH || 2:RR  "))
-FCFSQue = queueObj(choice,FCFSProcQue)
-#
+
+# Creating queue process lists for different queues
+TmpQue = queueObj(choice,procObjList)
+for i in range(len(TmpQue.readyQueue)):
+    print(TmpQue.readyQueue[i].processList)
+for i in range(len(TmpQue.readyQueue)):
+    print("Wait time for process:",i+1, " is:", TmpQue.readyQueue[i].waitTime)
