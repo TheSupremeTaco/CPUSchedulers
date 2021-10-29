@@ -12,6 +12,8 @@ class proccessListObj:
             self.CPUBurst = self.processList.pop(0)
         self.IOBurst = 0
         self.waitTime = 0
+        self.startTime = -1
+        self.endTime = -1
         self.TRTime = 0
 
 class queueObj:
@@ -29,7 +31,8 @@ class queueObj:
         if choice == 0:
             # FCFS procedure
             self.populateFCFS()
-            self.schedularFCFS()
+            for i in range(34):
+                self.schedularFCFS()
         elif choice == 1:
             # SJF procedure
             print()
@@ -46,7 +49,7 @@ class queueObj:
             self.readyQueue.append(self.processObjList[i])
 
     def schedularFCFS(self):
-        print("Current Execution Time: ", self.clock)
+        print("\nCurrent Execution Time: ", self.clock)
         # Ready Queue Procedures
         if len(self.runQueue) == 0:
             self.runQueue.append(self.readyQueue.pop(0))
@@ -54,20 +57,28 @@ class queueObj:
             self.readyQueue[i].waitTime += 1
 
         # Run State Procedures
+        print("Process List: ", self.runQueue[0].processList, "CPU Burst Time: ", self.runQueue[0].CPUBurst)
         if len(self.runQueue) == 0:
             self.CPUUtil += 1
         self.runQueue[0].CPUBurst -= 1
-        if self.runQueue[0].CPUBurst == 0:
+        if self.runQueue[0].CPUBurst == -1:
             self.IOQueue.append(self.runQueue.pop(0))
 
         # IO Queue Procedures
-        for i in range(len(self.IOQueue)):
-            self.IOQueue[i]
-
-        print("Ready Queue: ", self.readyQueue)
-        print("Run Queue: ", self.runQueue)
-        #
-
+        IOQue = len(self.IOQueue)
+        j = 0
+        while j < IOQue:
+            self.IOQueue[j].IOBurst -= 1
+            if self.IOQueue[j].IOBurst == -1:
+                self.IOQueue[j].IOBurst = self.IOQueue[j].IOBurst = self.IOQueue[j].processList.pop(0)
+            print("Process List: ", self.IOQueue[j].processList, "IO Burst Time: ", self.IOQueue[j].IOBurst)
+            if self.IOQueue[0].IOBurst == 0:
+                self.readyQueue.append(self.IOQueue.pop(0))
+                IOQue = len(self.IOQueue)
+                j -= 1
+            j += 1
+        # One clock cycle ends here
+        self.clock += 1
 
 
 # Importing process data into arrays
@@ -89,7 +100,5 @@ choice = 0#int(input("Enter 0:FCFC || 1:SJH || 2:RR  "))
 
 # Creating queue process lists for different queues
 TmpQue = queueObj(choice,procObjList)
-for i in range(len(TmpQue.readyQueue)):
-    print(TmpQue.readyQueue[i].processList)
-for i in range(len(TmpQue.readyQueue)):
-    print("Wait time for process:",i+1, " is:", TmpQue.readyQueue[i].waitTime)
+#for i in range(len(TmpQue.readyQueue)):
+#    print(TmpQue.readyQueue[i].processList)
