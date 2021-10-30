@@ -57,12 +57,18 @@ class queueObj:
             self.readyQueue[i].waitTime += 1
 
         # Run State Procedures
-        print("Process List: ", self.runQueue[0].processList, "CPU Burst Time: ", self.runQueue[0].CPUBurst)
+        if self.runQueue[0].CPUBurst == 0:
+            print("Process List: ", self.runQueue[0].processList, "CPU Burst Time: COMPLETED")
+        else:
+            print("Process List: ", self.runQueue[0].processList, "CPU Burst Time: ", self.runQueue[0].CPUBurst)
+        if self.runQueue[0].CPUBurst == 0:
+            self.IOQueue.append(self.runQueue.pop(0))
+            self.runQueue.append(self.readyQueue.pop(0))
+            print("Process List: ", self.runQueue[0].processList, "CPU Burst Time: ", self.runQueue[0].CPUBurst)
         if len(self.runQueue) == 0:
             self.CPUUtil += 1
         self.runQueue[0].CPUBurst -= 1
-        if self.runQueue[0].CPUBurst == -1:
-            self.IOQueue.append(self.runQueue.pop(0))
+
 
         # IO Queue Procedures
         IOQue = len(self.IOQueue)
