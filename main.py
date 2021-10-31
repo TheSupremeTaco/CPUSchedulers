@@ -2,6 +2,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 import math
 import copy
+#TODO check what happens in SJF when process executes completely
+#TODO ADD RR Scheduling (major changes only in run state)
+#TODO MLFQ (major changes only in run state: three diff queues in run state RR5 RR10 FCFS)
 
 # Creating the process data objects
 class proccessListObj:
@@ -45,7 +48,12 @@ class queueObj:
             self.printResults()
         elif choice == 1:
             # SJF procedure
-            print()
+            self.type = "SJF"
+            self.populateSJF()
+            while len(self.runQueue) != 0 or len(self.IOQueue) != 0 or len(self.readyQueue) != 0:
+                self.schedularSJF()
+            self.calcResults()
+            self.printResults()
         elif choice == 2:
             # RR procedure
             print()
@@ -75,6 +83,94 @@ class queueObj:
         # FCFS Queue Object
         for i in range(len(self.processObjList)):
             self.readyQueue.append(self.processObjList[i])
+
+    def populateSJF(self):
+        #SJF Queue Object
+        tmpObjList = copy.deepcopy(self.processObjList)
+        while len(self.readyQueue) < len(self.processObjList):
+            minBurst = tmpObjList[0].CPUBurst
+            x=0
+            for i in range(len(tmpObjList)):
+                if minBurst > tmpObjList[i].CPUBurst:
+                    minBurst = tmpObjList[i].CPUBurst
+                    x = i
+            self.readyQueue.append(tmpObjList[x])
+            tmpObjList.pop(x)
+
+
+    def schedularSJF(self):
+        current = []
+        current.append(["==========================================================================="])
+        current.append(["Current Execution Time: " + str(self.clock)])
+        # Ready Queue Procedures
+        current.append(["\nReady Queue:"])
+        # Changes CPU Burst from process list
+        for i in range(len(self.readyQueue)):
+            if self.readyQueue[i].CPUBurst == 0:
+                self.readyQueue[i].CPUBurst = self.readyQueue[i].CPUBurst = self.readyQueue[i].processList.pop(0)
+        # Checks if run que is empty and move first element in stack to run
+        if len(self.runQueue) == 0 and len(self.readyQueue) != 0:
+            self.runQueue.append(self.readyQueue.pop(0))
+            self.contextFlag = 1
+        # Adds wait time to each process in ready queue
+        for i in range(len(self.readyQueue)):
+            self.readyQueue[i].waitTime += 1
+            current.append([str(self.readyQueue[i].procName) + " CPU Burst Time: " + str(self.readyQueue[i].CPUBurst)])
+
+        # Run State Procedures
+        if len(self.runQueue) != 0:
+            if self.runQueue[0].CPUBurst == 0:
+                if len(self.runQueue[0].processList) == 0:
+                    self.runQueue[0].endTime = self.clock
+                    self.runQueue.pop(0)
+                    if len(self.readyQueue) != 0:
+                        self.runQueue.append(self.readyQueue.pop(0))
+                        self.contextFlag = 1
+                else:
+                    self.IOQueue.append(self.runQueue.pop(0))
+                    if len(self.readyQueue) != 0:
+                        self.runQueue.append(self.readyQueue.pop(0))
+                        self.contextFlag = 1
+        if len(self.runQueue) == 0:
+            self.nonCPUUtil += 1
+            current.append(["\nRunning process: None", " CPU Burst Time Remaining: N/A"])
+        else:
+            if self.runQueue[0].startTime == -1:
+                self.runQueue[0].startTime = self.clock
+            self.runQueue[0].CPUBurst -= 1
+            current.append(["\nRunning process: " + str(
+                self.runQueue[0].procName) + " CPU Burst Time Remaining: " + str(self.runQueue[0].CPUBurst + 1)])
+
+        # IO Queue Procedures
+        current.append(["\nI/O Queue:"])
+        if self.clock == 527:
+            print()
+        IOQue = len(self.IOQueue)
+        j = 0
+        if self.clock == 107:
+            print()
+        while j < IOQue:
+            self.IOQueue[j].IOBurst -= 1
+            if self.IOQueue[j].IOBurst == -1:
+                self.IOQueue[j].IOBurst = self.IOQueue[j].processList.pop(0)
+            current.append([str(self.IOQueue[j].procName) + " IO Burst Time: " + str(self.IOQueue[j].IOBurst)])
+            if self.IOQueue[j].IOBurst == 0:
+                # Moves to ready queue after finishing IO burst
+                x =0
+                minBurst = self.IOQueue[j].processList[0]
+                for i in range(len(self.readyQueue)):
+                    if minBurst > self.readyQueue[i].CPUBurst:
+                        x += 1
+                self.readyQueue.insert(x,self.IOQueue.pop(j))
+                self.readyQueue[x].CPUBurst = self.readyQueue[x].processList.pop(0)
+                IOQue = len(self.IOQueue)
+                j -= 1
+            j += 1
+        # One clock cycle ends here
+        for i in range(len(current)):
+            print(", ".join(current[i]))
+        self.contextFlag = 0
+        self.clock += 1
 
     def schedularFCFS(self):
         current = []
@@ -155,7 +251,7 @@ for i in range(len(processDataList)):
     procName = "P"+str(i+1)
     procObjList.append(proccessListObj(processDataList[i],procName))
 
-choice = 0#int(input("Enter 0:FCFC || 1:SJH || 2:RR  "))
+choice = 1#int(input("Enter 0:FCFC || 1:SJH || 2:RR  "))
 
 # Creating queue process lists for different queues
 
