@@ -33,6 +33,7 @@ class queueObj:
         self.avgResponseTime = 0
         self.actualCPUUtil = 0
         self.type = ""
+        self.contextFlag = 1
 
         if choice == 0:
             # FCFS procedure
@@ -76,19 +77,20 @@ class queueObj:
             self.readyQueue.append(self.processObjList[i])
 
     def schedularFCFS(self):
-        print("\n===========================================================================")
-        print("Current Execution Time: ", self.clock)
-
+        current = []
+        current.append(["==========================================================================="])
+        current.append(["Current Execution Time: "+ str(self.clock)])
         # Ready Queue Procedures
-        print("\nReady Queue:")
+        current.append(["\nReady Queue:"])
         for i in range(len(self.readyQueue)):
             if self.readyQueue[i].CPUBurst == 0:
                 self.readyQueue[i].CPUBurst = self.readyQueue[i].CPUBurst = self.readyQueue[i].processList.pop(0)
         if len(self.runQueue) == 0 and len(self.readyQueue) != 0:
             self.runQueue.append(self.readyQueue.pop(0))
+            self.contextFlag = 1
         for i in range(len(self.readyQueue)):
             self.readyQueue[i].waitTime += 1
-            print(self.readyQueue[i].procName, " CPU Burst Time: ", self.readyQueue[i].CPUBurst)
+            current.append([str(self.readyQueue[i].procName)+ " CPU Burst Time: "+ str(self.readyQueue[i].CPUBurst)])
 
         # Run State Procedures
         if len(self.runQueue) != 0:
@@ -98,21 +100,23 @@ class queueObj:
                     self.runQueue.pop(0)
                     if len(self.readyQueue) != 0:
                         self.runQueue.append(self.readyQueue.pop(0))
+                        self.contextFlag = 1
                 else:
                     self.IOQueue.append(self.runQueue.pop(0))
                     if len(self.readyQueue) != 0:
                         self.runQueue.append(self.readyQueue.pop(0))
+                        self.contextFlag = 1
         if len(self.runQueue) == 0:
             self.nonCPUUtil += 1
-            print("\nRunning process: None", " CPU Burst Time Remaining: N/A")
+            current.append(["\nRunning process: None", " CPU Burst Time Remaining: N/A"])
         else:
             if self.runQueue[0].startTime == -1:
                 self.runQueue[0].startTime = self.clock
             self.runQueue[0].CPUBurst -= 1
-            print("\nRunning process: ", self.runQueue[0].procName, " CPU Burst Time Remaining: ", self.runQueue[0].CPUBurst+1)
+            current.append(["\nRunning process: "+ str(self.runQueue[0].procName)+ " CPU Burst Time Remaining: "+ str(self.runQueue[0].CPUBurst+1)])
 
         # IO Queue Procedures
-        print("\nI/O Queue:")
+        current.append(["\nI/O Queue:"])
         if self.clock == 527:
             print()
         IOQue = len(self.IOQueue)
@@ -121,13 +125,17 @@ class queueObj:
             self.IOQueue[j].IOBurst -= 1
             if self.IOQueue[j].IOBurst == -1:
                 self.IOQueue[j].IOBurst = self.IOQueue[j].processList.pop(0)
-            print(self.IOQueue[j].procName, " IO Burst Time: ", self.IOQueue[j].IOBurst)
+            current.append([str(self.IOQueue[j].procName)+ " IO Burst Time: "+ str(self.IOQueue[j].IOBurst)])
             if self.IOQueue[j].IOBurst == 0:
                 self.readyQueue.append(self.IOQueue.pop(j))
                 IOQue = len(self.IOQueue)
                 j -= 1
             j += 1
         # One clock cycle ends here
+        if self.contextFlag == 1:
+            for i in range(len(current)):
+                print(", ".join(current[i]))
+        self.contextFlag = 0
         self.clock += 1
 
 
