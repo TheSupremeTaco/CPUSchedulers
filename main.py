@@ -32,14 +32,16 @@ class queueObj:
         self.avgTRTime = 0
         self.avgResponseTime = 0
         self.actualCPUUtil = 0
-
+        self.type = ""
 
         if choice == 0:
             # FCFS procedure
+            self.type = "FCFS"
             self.populateFCFS()
             while len(self.runQueue) != 0 or len(self.IOQueue) != 0 or len(self.readyQueue) != 0:
                 self.schedularFCFS()
             self.calcResults()
+            self.printResults()
         elif choice == 1:
             # SJF procedure
             print()
@@ -49,6 +51,13 @@ class queueObj:
         elif choice == 3:
             # MLFQ procedure
             print()
+
+    def printResults(self):
+        print("\n===========================================================================")
+        print(self.type, " CPU utilization: %", "%.2f" % self.actualCPUUtil, " Tw: ", self.avgWait, " Ttr: ",
+              self.avgTRTime,
+              " Tr: ", self.avgResponseTime)
+        print("===========================================================================")
 
     def calcResults(self):
         for i in range(len(procObjList)):
@@ -141,8 +150,5 @@ for i in range(len(processDataList)):
 choice = 0#int(input("Enter 0:FCFC || 1:SJH || 2:RR  "))
 
 # Creating queue process lists for different queues
+
 TmpQue = queueObj(choice,procObjList)
-print("\n===========================================================================")
-print("CPU utilization: %", "%.2f" % TmpQue.actualCPUUtil, " Tw: ", TmpQue.avgWait, " Ttr: ", TmpQue.avgTRTime, " Tr: ", TmpQue.avgResponseTime)
-print("===========================================================================")
-#
