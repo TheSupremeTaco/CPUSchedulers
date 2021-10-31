@@ -5,7 +5,7 @@ import copy
 
 # Creating the process data objects
 class proccessListObj:
-    def __init__(self, processDataList : np.ndarray):
+    def __init__(self, processDataList : np.ndarray, procName):
         self.processList = processDataList.copy()
         self.CPUBurst = -1
         if(self.CPUBurst == -1):
@@ -15,6 +15,7 @@ class proccessListObj:
         self.startTime = -1
         self.endTime = -1
         self.TRTime = 0
+        self.procName = procName
 
 class queueObj:
     # Creating Queues as objects
@@ -23,16 +24,22 @@ class queueObj:
         self.processObjList = copy.deepcopy(processObjList)
         self.qTime = 0
         self.clock = 0
-        self.CPUUtil = 0
+        self.nonCPUUtil = 0
         self.readyQueue = []
         self.runQueue = []
         self.IOQueue = []
+        self.avgWait = 0
+        self.avgTRTime = 0
+        self.avgResponseTime = 0
+        self.actualCPUUtil = 0
+
 
         if choice == 0:
             # FCFS procedure
             self.populateFCFS()
-            for i in range(34):
+            while len(self.runQueue) != 0 or len(self.IOQueue) != 0 or len(self.readyQueue) != 0:
                 self.schedularFCFS()
+            self.calcResults()
         elif choice == 1:
             # SJF procedure
             print()
@@ -43,43 +50,71 @@ class queueObj:
             # MLFQ procedure
             print()
 
+    def calcResults(self):
+        for i in range(len(procObjList)):
+            self.avgWait += self.processObjList[i].waitTime
+            self.avgTRTime += self.processObjList[i].endTime - self.processObjList[i].startTime
+            self.avgResponseTime += self.processObjList[i].startTime
+        self.avgWait /= len(self.processObjList)
+        self.avgTRTime /= len(self.processObjList)
+        self.avgResponseTime /= len(self.processObjList)
+        self.actualCPUUtil = (self.clock - self.nonCPUUtil)*100 / self.clock
+
+
     def populateFCFS(self):
         # FCFS Queue Object
         for i in range(len(self.processObjList)):
             self.readyQueue.append(self.processObjList[i])
 
     def schedularFCFS(self):
-        print("\nCurrent Execution Time: ", self.clock)
+        print("\n===========================================================================")
+        print("Current Execution Time: ", self.clock)
+
         # Ready Queue Procedures
-        if len(self.runQueue) == 0:
+        print("\nReady Queue:")
+        for i in range(len(self.readyQueue)):
+            if self.readyQueue[i].CPUBurst == 0:
+                self.readyQueue[i].CPUBurst = self.readyQueue[i].CPUBurst = self.readyQueue[i].processList.pop(0)
+        if len(self.runQueue) == 0 and len(self.readyQueue) != 0:
             self.runQueue.append(self.readyQueue.pop(0))
         for i in range(len(self.readyQueue)):
             self.readyQueue[i].waitTime += 1
+            print(self.readyQueue[i].procName, " CPU Burst Time: ", self.readyQueue[i].CPUBurst)
 
         # Run State Procedures
-        if self.runQueue[0].CPUBurst == 0:
-            print("Process List: ", self.runQueue[0].processList, "CPU Burst Time: COMPLETED")
-        else:
-            print("Process List: ", self.runQueue[0].processList, "CPU Burst Time: ", self.runQueue[0].CPUBurst)
-        if self.runQueue[0].CPUBurst == 0:
-            self.IOQueue.append(self.runQueue.pop(0))
-            self.runQueue.append(self.readyQueue.pop(0))
-            print("Process List: ", self.runQueue[0].processList, "CPU Burst Time: ", self.runQueue[0].CPUBurst)
+        if len(self.runQueue) != 0:
+            if self.runQueue[0].CPUBurst == 0:
+                if len(self.runQueue[0].processList) == 0:
+                    self.runQueue[0].endTime = self.clock
+                    self.runQueue.pop(0)
+                    if len(self.readyQueue) != 0:
+                        self.runQueue.append(self.readyQueue.pop(0))
+                else:
+                    self.IOQueue.append(self.runQueue.pop(0))
+                    if len(self.readyQueue) != 0:
+                        self.runQueue.append(self.readyQueue.pop(0))
         if len(self.runQueue) == 0:
-            self.CPUUtil += 1
-        self.runQueue[0].CPUBurst -= 1
-
+            self.nonCPUUtil += 1
+            print("\nRunning process: None", " CPU Burst Time Remaining: N/A")
+        else:
+            if self.runQueue[0].startTime == -1:
+                self.runQueue[0].startTime = self.clock
+            self.runQueue[0].CPUBurst -= 1
+            print("\nRunning process: ", self.runQueue[0].procName, " CPU Burst Time Remaining: ", self.runQueue[0].CPUBurst+1)
 
         # IO Queue Procedures
+        print("\nI/O Queue:")
+        if self.clock == 527:
+            print()
         IOQue = len(self.IOQueue)
         j = 0
         while j < IOQue:
             self.IOQueue[j].IOBurst -= 1
             if self.IOQueue[j].IOBurst == -1:
-                self.IOQueue[j].IOBurst = self.IOQueue[j].IOBurst = self.IOQueue[j].processList.pop(0)
-            print("Process List: ", self.IOQueue[j].processList, "IO Burst Time: ", self.IOQueue[j].IOBurst)
-            if self.IOQueue[0].IOBurst == 0:
-                self.readyQueue.append(self.IOQueue.pop(0))
+                self.IOQueue[j].IOBurst = self.IOQueue[j].processList.pop(0)
+            print(self.IOQueue[j].procName, " IO Burst Time: ", self.IOQueue[j].IOBurst)
+            if self.IOQueue[j].IOBurst == 0:
+                self.readyQueue.append(self.IOQueue.pop(j))
                 IOQue = len(self.IOQueue)
                 j -= 1
             j += 1
@@ -100,11 +135,13 @@ P8 =[4, 14, 5, 33, 6, 51, 14, 73, 16, 87, 6]
 processDataList = [P1,P2,P3,P4,P5,P6,P7,P8]
 procObjList = []
 for i in range(len(processDataList)):
-    procObjList.append(proccessListObj(processDataList[i]))
+    procName = "P"+str(i+1)
+    procObjList.append(proccessListObj(processDataList[i],procName))
 
 choice = 0#int(input("Enter 0:FCFC || 1:SJH || 2:RR  "))
 
 # Creating queue process lists for different queues
 TmpQue = queueObj(choice,procObjList)
-#for i in range(len(TmpQue.readyQueue)):
-#    print(TmpQue.readyQueue[i].processList)
+print("\n===========================================================================")
+print("CPU utilization: %", "%.2f" % TmpQue.actualCPUUtil, " Tw: ", TmpQue.avgWait, " Ttr: ", TmpQue.avgTRTime, " Tr: ", TmpQue.avgResponseTime)
+print("===========================================================================")
