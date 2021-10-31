@@ -145,3 +145,4 @@ TmpQue = queueObj(choice,procObjList)
 print("\n===========================================================================")
 print("CPU utilization: %", "%.2f" % TmpQue.actualCPUUtil, " Tw: ", TmpQue.avgWait, " Ttr: ", TmpQue.avgTRTime, " Tr: ", TmpQue.avgResponseTime)
 print("===========================================================================")
+#
