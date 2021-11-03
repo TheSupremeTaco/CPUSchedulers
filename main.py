@@ -2,7 +2,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 import math
 import copy
-#TODO check what happens in SJF when process executes completely
 #TODO ADD RR Scheduling (major changes only in run state)
 #TODO MLFQ (major changes only in run state: three diff queues in run state RR5 RR10 FCFS)
 
@@ -86,7 +85,7 @@ class queueObj:
 
     def populateSJF(self):
         #SJF Queue Object
-        tmpObjList = copy.deepcopy(self.processObjList)
+        tmpObjList = copy.copy(self.processObjList)
         while len(self.readyQueue) < len(self.processObjList):
             minBurst = tmpObjList[0].CPUBurst
             x=0
@@ -104,6 +103,8 @@ class queueObj:
         current.append(["Current Execution Time: " + str(self.clock)])
         # Ready Queue Procedures
         current.append(["\nReady Queue:"])
+        if self.clock == 300:
+            print()
         # Changes CPU Burst from process list
         for i in range(len(self.readyQueue)):
             if self.readyQueue[i].CPUBurst == 0:
