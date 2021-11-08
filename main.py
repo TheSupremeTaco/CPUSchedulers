@@ -307,6 +307,7 @@ class queueObj:
             if self.runQueue[0].CPUBurst == 0:
                 if len(self.runQueue[0].processList) == 0:
                     self.runQueue[0].endTime = self.clock
+                    current.append(["\n" + str(self.runQueue[0].procName) + " Completed Total Execution"])
                     self.runQueue.pop(0)
                     if len(self.readyQueue) != 0:
                         self.runQueue.append(self.readyQueue.pop(0))
@@ -365,7 +366,7 @@ for i in range(len(processDataList)):
     procName = "P"+str(i+1)
     procObjList.append(proccessListObj(processDataList[i],procName))
 
-choice = 2#int(input("Enter 0:FCFC || 1:SJH || 2:MLFQ  "))
+choice = 0#int(input("Enter 0:FCFC || 1:SJH || 2:MLFQ  "))
 
 # Creating queue process lists for different queues
 
