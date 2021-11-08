@@ -69,6 +69,10 @@ class queueObj:
               self.avgTRTime,
               " Tr: ", self.avgResponseTime)
         print("=====================================================================================")
+        for i in range(len(self.processObjList)):
+            print(self.processObjList[i].procName, " Wait Time:", self.processObjList[i].waitTime, " Turnaround Time", self.processObjList[i].endTime - self.processObjList[i].startTime,
+                  " Response Time: ", self.processObjList[i].startTime)
+        print("=====================================================================================")
 
     def calcResults(self):
         for i in range(len(procObjList)):
@@ -361,7 +365,7 @@ for i in range(len(processDataList)):
     procName = "P"+str(i+1)
     procObjList.append(proccessListObj(processDataList[i],procName))
 
-choice = 2#int(input("Enter 0:FCFC || 1:SJH || 2:RR  "))
+choice = 2#int(input("Enter 0:FCFC || 1:SJH || 2:MLFQ  "))
 
 # Creating queue process lists for different queues
 
